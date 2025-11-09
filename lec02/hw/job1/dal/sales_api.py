@@ -8,10 +8,25 @@ API_URL = "https://fake-api-vycpfa6oca-uc.a.run.app/"
 
 def get_sales(date: str) -> List[Dict[str, Any]]:
     """
-    Get data from sales API for specified date.
+    Retrieve sales records from the external Sales API for a given date.
 
-    :param date: data retrieve the data from
-    :return: list of records
+    Pagination is performed automatically: the function requests pages
+    incrementally until no more data is returned.
+
+    Parameters
+    ----------
+    date : str
+        Date of sales in format "YYYY-MM-DD".
+
+    Returns
+    -------
+    List[Dict[str, Any]]
+        List of sales records. If no records found, returns an empty list.
+
+    Raises
+    ------
+    RuntimeError
+        If authentication token is missing.
     """
     auth_token = os.environ.get("AUTH_TOKEN")
     headers = {"Authorization": auth_token}

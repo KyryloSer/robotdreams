@@ -5,14 +5,16 @@ and trigger business logic layer
 
 import os
 
+from dotenv import load_dotenv
 from flask import Flask, request
 from flask import typing as flask_typing
 
 from lec02.hw.job1.bll.sales_api import save_sales_to_local_disk
 from lec02.utils.validate_date import valid_date
 
-AUTH_TOKEN = os.environ.get("API_AUTH_TOKEN")
+load_dotenv()
 
+AUTH_TOKEN = os.getenv("API_AUTH_TOKEN")
 if not AUTH_TOKEN:
     print("AUTH_TOKEN environment variable must be set")
 
@@ -33,7 +35,6 @@ def main() -> flask_typing.ResponseReturnValue:
     }
     """
     input_data: dict = request.json
-    # TODO: implement me
     date = input_data.get("date")
     raw_dir = input_data.get("raw_dir")
 

@@ -1,5 +1,6 @@
 import os
 import time
+from pathlib import Path
 
 import requests
 
@@ -7,7 +8,8 @@ BASE_DIR = os.environ.get("BASE_DIR")
 
 if not BASE_DIR:
     print("BASE_DIR environment variable must be set")
-    exit(1)
+    BASE_DIR = Path(__file__).resolve().parent.parent / "storage"
+
 
 JOB1_PORT = 8081
 JOB2_PORT = 8082
