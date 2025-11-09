@@ -1,0 +1,19 @@
+exclude: |
+  (?x)^(
+    \.idea/.*
+    )$
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.4
+    hooks:
+      - id: ruff
+        args: ["--fix"]
+        files: \.py$
+      ###### Relevant part below ######
+      - id: ruff
+        args: [ "check", "--select", "I", "--fix" ]
+        files: \.py$
+      ###### Relevant part above ######
+      - id: ruff-format
+        files: \.py$
