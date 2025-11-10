@@ -1,11 +1,9 @@
 """
 Tests for main.py
-# TODO: write tests
 """
 
 from unittest import TestCase, mock
 
-# NB: avoid relative imports when you will write your code
 from .. import main
 
 
@@ -15,46 +13,65 @@ class MainFunctionTestCase(TestCase):
         main.app.testing = True
         cls.client = main.app.test_client()
 
-    @mock.patch("lesson_02.ht_template.job1.main.save_sales_to_local_disk")
-    def test_return_400_date_param_missed(self, get_sales_mock: mock.MagicMock):
+    @mock.patch("job2.main.save_sales_to_local_disk_as_avro")
+    def test_return_400_stg_dir_param_missed(self, get_sales_mock: mock.MagicMock):
         """
-        Raise 400 HTTP code when no 'date' param
+        Raise 400 HTTP code when no 'stg_dir' param
         """
         resp = self.client.post(
             "/",
             json={
                 "raw_dir": "/foo/bar/",
-                # no 'date' set!
+                # stg_dir отсутствует
             },
         )
-
         self.assertEqual(400, resp.status_code)
+        self.assertIn("stg_dir parameter missed", resp.get_json()["message"])
 
-    def test_return_400_raw_dir_param_missed(self):
-        pass
+    @mock.patch("job2.main.save_sales_to_local_disk_as_avro")
+    def test_return_400_raw_dir_param_missed(self, get_sales_mock: mock.MagicMock):
+        """
+        ДRaise 400 HTTP code when no 'raw_dir' param
+        """
+        resp = self.client.post(
+            "/",
+            json={
+                "stg_dir": "/foo/stg/",
+                # raw_dir отсутствует
+            },
+        )
+        self.assertEqual(400, resp.status_code)
+        self.assertIn("raw_dir parameter missed", resp.get_json()["message"])
 
-    @mock.patch("lesson_02.ht_template.job1.main.save_sales_to_local_disk")
-    def test_save_sales_to_local_disk(
-        self, save_sales_to_local_disk_mock: mock.MagicMock
+    @mock.patch("job2.main.save_sales_to_local_disk_as_avro")
+    def test_save_sales_to_local_disk_called_with_params(
+        self, save_mock: mock.MagicMock
     ):
         """
-        Test whether api.get_sales is called with proper params
+        Test that the BLL function is called with correct parameters.
         """
-        fake_date = "1970-01-01"
-        fake_raw_dir = "/foo/bar/"
+        fake_stg_dir = "/foo/stg/"
+        fake_raw_dir = "/foo/raw/"
         self.client.post(
             "/",
             json={
-                "date": fake_date,
+                "stg_dir": fake_stg_dir,
                 "raw_dir": fake_raw_dir,
             },
         )
+        save_mock.assert_called_with(stg_dir=fake_stg_dir, raw_dir=fake_raw_dir)
 
-        save_sales_to_local_disk_mock.assert_called_with(
-            date=fake_date,
-            raw_dir=fake_raw_dir,
+    @mock.patch("job2.main.save_sales_to_local_disk_as_avro")
+    def test_return_201_when_all_is_ok(self, _mock: mock.MagicMock):
+        """
+        Should return 201 when both 'stg_dir' and 'raw_dir' are provided.
+        """
+        resp = self.client.post(
+            "/",
+            json={
+                "stg_dir": "/foo/stg/",
+                "raw_dir": "/foo/raw/",
+            },
         )
-
-    @mock.patch("lesson_02.ht_template.job1.main.save_sales_to_local_disk")
-    def test_return_201_when_all_is_ok(self, get_sales_mock: mock.MagicMock):
-        pass
+        self.assertEqual(201, resp.status_code)
+        self.assertIn("Data retrieved successfully", resp.get_json()["message"])

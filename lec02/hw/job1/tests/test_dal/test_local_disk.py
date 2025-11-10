@@ -1,6 +1,5 @@
 """
 Tests dal.local_disk.py module
-# TODO: write tests
 """
 
 from unittest import TestCase, mock  # noqa: F401
