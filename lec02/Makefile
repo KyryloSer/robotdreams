@@ -11,7 +11,7 @@ help:
 	
 
 tests:
-	source venv/Scripts/activate && pytest job1/tests job2/tests -v
+	source venv/Scripts/activate && pytest hw/job1/tests hw/job2/tests -v
 
 pre-commit:
 	source venv/Scripts/activate && pre-commit install
