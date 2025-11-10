@@ -30,7 +30,7 @@ def main() -> flask_typing.ResponseReturnValue:
 
     Proposed POST body in JSON:
     {
-      "data: "2022-08-09",
+      "data": "2022-08-09",
       "raw_dir": "/path/to/my_dir/raw/sales/2022-08-09"
     }
     """
@@ -41,6 +41,11 @@ def main() -> flask_typing.ResponseReturnValue:
     if not date:
         return {
             "message": "date parameter missed",
+        }, 400
+
+    if not raw_dir:
+        return {
+            "message": "raw_dir parameter missed",
         }, 400
 
     try:
