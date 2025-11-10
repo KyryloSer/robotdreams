@@ -8,7 +8,7 @@ help:
 	@echo "  tests        - Run tests"
 	@echo "  pre-commit  - Install pre-commit hooks"
 	@echo "  clean       - Clean up cache files"
-	
+
 
 tests:
 	 source venv/Scripts/activate && cd .. && python -m pytest lec02/hw/job1/tests lec02/hw/job2/tests lec02/utils/tests -v
@@ -16,10 +16,3 @@ tests:
 pre-commit:
 	source venv/Scripts/activate && pre-commit install
 	source venv/Scripts/activate && pre-commit run --all-files
-
-clean:
-	find . -type f -name "*.pyc" -delete
-	find . -type d -name "__pycache__" -delete
-	find . -type d -name ".pytest_cache" -exec rm -rf {} +
-	find . -type d -name ".mypy_cache" -exec rm -rf {} +
-
