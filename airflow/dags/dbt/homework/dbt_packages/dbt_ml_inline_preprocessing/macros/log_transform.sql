@@ -6,7 +6,7 @@
 
     case
         when {{ column }} is null or {{ column }} + {{ offset }} <= 0 then null
-        else log({{ base }}, {{ column }} + {{ offset }})
+        else ln({{ column }} + {{ offset }}) / ln({{ base }})
     end
 
 {% endmacro %}

@@ -96,9 +96,15 @@ def process_iris_data(**kwargs):
         'features_count': [X_train.shape[1], 5],
         'run_timestamp': [pd.Timestamp.now(), pd.Timestamp.now()]
     })
-    
+
+    # Lowercase column names for Postgres compatibility
+    results_df.columns = [c.lower() for c in results_df.columns]
+
     # Save feature importance to database
     feature_importance_df['run_timestamp'] = pd.Timestamp.now()
+
+    # Lowercase here too
+    feature_importance_df.columns = [c.lower() for c in feature_importance_df.columns]
     
     # Save results to PostgreSQL
     with engine.connect() as connection:
