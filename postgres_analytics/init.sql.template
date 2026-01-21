@@ -1,0 +1,67 @@
+CREATE DATABASE ${POSTGRES_USER};
+
+-- Connect to the analytics database to create schemas
+\c ${POSTGRES_DB};
+-- Create schemas
+CREATE SCHEMA IF NOT EXISTS raw;
+CREATE SCHEMA IF NOT EXISTS analytics;
+CREATE SCHEMA IF NOT EXISTS homework;
+
+-- Sample table for testing
+CREATE TABLE IF NOT EXISTS raw.example_data (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    value NUMERIC,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO raw.example_data (name, value)
+VALUES
+('item1', 10.5),
+('item2', 20.1),
+('item3', 15.7),
+('item4', 10.5),
+('item5', 20.1),
+('item6', 15.7);
+
+-- Create read-only user (unsafe on rerun, ok if you always recreate volume)
+CREATE USER ${ANALYTICS_READONLY_USER} WITH PASSWORD '${ANALYTICS_READONLY_PASSWORD}';
+GRANT CONNECT ON DATABASE ${POSTGRES_DB} TO ${ANALYTICS_READONLY_USER};
+
+GRANT USAGE ON SCHEMA raw, analytics, homework TO ${ANALYTICS_READONLY_USER};
+GRANT SELECT ON ALL TABLES IN SCHEMA raw, analytics, homework TO ${ANALYTICS_READONLY_USER};
+ALTER DEFAULT PRIVILEGES IN SCHEMA raw, analytics, homework GRANT SELECT ON TABLES TO ${ANALYTICS_READONLY_USER};
+
+-- Create ETL user
+CREATE USER ${ETL_USER} WITH PASSWORD '${ETL_PASSWORD}';
+
+-- IMPORTANT: DB-level privileges (this is what your dbt error was about)
+GRANT CONNECT, CREATE ON DATABASE ${POSTGRES_DB} TO ${ETL_USER};
+
+-- Schema privileges
+GRANT USAGE, CREATE ON SCHEMA raw, analytics, homework TO ${ETL_USER};
+
+-- Table/sequence privileges
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA raw, analytics, homework TO ${ETL_USER};
+GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA raw, analytics, homework TO ${ETL_USER};
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA raw, analytics, homework
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO ${ETL_USER};
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA raw, analytics, homework
+GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO ${ETL_USER};
+
+-- Iris dataset
+DROP TABLE IF EXISTS analytics.iris_dataset;
+
+CREATE TABLE analytics.iris_dataset (
+    id SERIAL PRIMARY KEY,
+    sepal_length FLOAT,
+    sepal_width FLOAT,
+    petal_length FLOAT,
+    petal_width FLOAT,
+    species VARCHAR(50)
+);
+
+\copy analytics.iris_dataset (sepal_length, sepal_width, petal_length, petal_width, species)
+FROM '/tmp/iris_data.csv' WITH CSV HEADER;
